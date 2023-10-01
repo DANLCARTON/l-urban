@@ -3,27 +3,23 @@ import { OrbitControls } from 'OrbitControls'; // importation de l'addon Orbit C
 import { TrackballControls } from 'TrackballControls'; // importation de l'addon Orbit Controls pour la gestion de la caméra
 import { FlyControls } from 'FlyControls';
 import { FirstPersonControls } from 'FirstPersonControls';
+import axioms from "./axioms";
+import {FRules, plusRules, minusRules, timesRules, divRules} from "./rules.js"
 
-const generateRandomPattern = (array) => {
-    const length = Math.ceil(Math.random()*15);
-    var randomPattern = ""
-    for (let i = 0; i <= length; i++) {
-        const letter = Math.floor(Math.random()*8)
-        randomPattern += array[letter]
-    }
-    return randomPattern
-}
-
-const generateRandomAxiom = () => {
-    const array = ["F", "+", "-", "*", "/"]
-    const length = Math.ceil(Math.random()*500)
-    var randomAxiom = ""
-    for (let i = 0; i <= length; i++) {
-        const letter = Math.floor(Math.random()*5)
-        randomAxiom += array[letter]
-    }
-    return randomAxiom
-}
+const urlParams = new URLSearchParams(window.location.search)
+let URL_AXIOM = urlParams.get("axiom")
+let URL_TYPED_AXIOM = urlParams.get("typed-axiom")
+let URL_F_RULE = urlParams.get("f-rule")
+let URL_TYPED_F_RULE = urlParams.get("typed-f-rule")
+let URL_PLUS_RULE = urlParams.get("plus-rule")
+let URL_TYPED_PLUS_RULE = urlParams.get("typed-plus-rule")
+let URL_MINUS_RULE = urlParams.get("minus-rule")
+let URL_TYPED_MINUS_RULE = urlParams.get("typed-minus-rule")
+let URL_TIMES_RULE = urlParams.get("times-rule")
+let URL_TYPED_TIMES_RULE = urlParams.get("typed-times-rule")
+let URL_DIV_RULE = urlParams.get("div-rule")
+let URL_TYPED_DIV_RULE = urlParams.get("typed-div-rule")
+let URL_ITER = urlParams.get("iter")
 
 const planeGeometry = new THREE.PlaneGeometry(1, 1)
 const draw = () => {
@@ -53,45 +49,8 @@ const drawSphere = (moment, pos) => {
     scene.add(sphere)
 }
 
-// AXIOMES ---------------------------------------------------------
-const testAxiom = "FFF[+FF-FF]FFFF/FFF[+FF-FF]FFFF/FFF[+FF-FF]FFFF"
-// const testAxiom = "F[-F]F[+F]F"
-const axiom1 = "F"
-const axiom2 = "F-F+*F/F"
-const axiomGPT100 = "F*F*F/F/F*F/F/F+F/F/F*F/F/F+F/F/F*F/F/F+F/F/F*F/F/F+F/F/F*F/F/F+F/F/F*F/F/F+F/F/F*F/F/F+F/F/F*F/F/F+"
-const axiomGPT200 = "F++--FF+F+FF-FF/FFFF/F/+F-F/F+F/FFF/F+/FF/F/FFF/F/F/F+F/F/F+FFF/F+F/F/FF/F/F+F/F/FFF/F+F/F/FFF/F/F+F/F/F+FFF/F+F/F/FF/F/F+F/F/FFF/F+F/F/FF/F/F+F/F/FFF/F+F/F/FF/F/F+F/F/FFF/F+F/F/FF/F/F+F/F/FFF/F+F/F/F"
-const axiomGPT300 = "F+-*F/FF*F+F*-*F/F*FF*+FF*FF-+F*FF/F-F*F*F-FF*F*FF+*F-FF/F+F/FF-F/F-FF*F-FF/F-FF-F-FF/F*F/FF/F*F+F/FF*F-F*FF+F*FF/FF*F/FF+FF/FF*F*F*FF/F*F/FF/FF+FF/F/F-F/F-F-FF+F+F/F*FF/FF/F*F/FF*F/FF/F*F/FF*F*F/FF+FF/F/F*FF+F/FF*F/FF*F/FF*F/FF/F*F+F/FF*F/F*F+F+F/FF*F/FF*F/FF*F/FF*F/FF*F+F*F/FF/F*F+F+F*F/FF/F*F*FF/"
-const axiomGPT400 = "F+FF-FF*F/FF*+FF/F-F*F*FF/F*F/F+FF-FF/FF+F*F/F/F-F/F*FF/F-F*F*F/FF*FF-F/F-F/F*F+FF/F+FF*FF/FF/F*F/F*FF-F*F/F/F*F/FF/F+FF-F/F+F/F/F*FF/FF-F+F/F/FF*F/FF/F*FF*F*F/F*F/F*FF/FF*F*F*F/FF-F/F*F/FF+F/FF/F/F*F/FF/F/F*FF-F/F/F*F/FF/F*F+F/FF/FF+F/F/F*F/FF/F*FF/FF/F+F/F+F/F*F/F/FF/F/F*FF/FF+F*F/F*F/FF*F+F/F*F/F/FF+F/FF/F+F/F/F*F/FF/F/F*F/F+F/FF/F*FF-F/F/F+F/F/F*F/F+F+F/FF+F/FF*F+F+F/FF/F+F/FF/FF*F+F+F/FF/F*F/"
-const axiomGPT500 = "FF+--*FF+*F-FF*F/FF+*FF+FF/FF+FF*F/FF*FF+F-FF*F/F/F/F/F/F/F/FF*F/FF*FF+F/F/F/FF+*F/F/F*FF/F/F/F/F/FF+F*FF/FF*F/F/F/F/F/F/FF/F/FF/F/F/FF+F/FF/F/F/FF*F/F/F/F/FF+*FF/FF/FF/F/F/F/F/FF*F/F/FF/FF/F/FF+*FF+F+F/FF/F/F/F/F/F/F/F/FF/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F/F"
-const axiomGPT852 = "F*+*-*F/+F+F-FFF+FF/F*-*+F+F*+F+*F*-*+F-F*-*F+F*-*+F*+FF/+F/F-+*F++F/F-+FF-F/FF-F/FF/F+F/FF/F-F/FF/+F-F+*F*+F-F/FF/F-+FF*-*+F/+F/+*F-*F/F+FF/+F+F/+F/F+F*+FF/F-+*F/F-F/+F+F/F-F/FF*+FF/F-+FF/F+F-+*F-F*-*F-F+F/F*-*F/F+F/+F/FF+F/FF/F*-*F/+F/+F/F+F*+FF/+F+F/+F/F+F*+FF/F-+*F/F-F/+F+F/F-F/FF*+FF/F-+FF/F+F-+*F-F*-*F-F+F/F*-*F/F+F/+F/FF+F/FF/F*-*F/+F/+F/F+F*+FF/+F+F/+F/F+F*+FF/F-+*F/F-F/+F+F/F-F/FF*+FF/F-+FF/F+F-+*F-F*-*F-F+F/F*-*F/F+F/+F/FF+F/FF/F*-*F/+F/+F/F+F*+FF/+F+F/+F/F+F*+FF/F-+*F/F-F/+F+F/F-F/FF*+FF/F-+FF/F+F-+*F-F*-*F-F+F/F*-*F/F+F/+F/FF+F/FF/F*-*F/+F/+F/F+F*+FF/+F+F/+F/F+F*+FF/F-+*F/F-F/+F+F/F-F/FF*+FF/F-+FF/F+F-+*F-F*-*F-F+F/F*-*F/F+F/+F/FF+F/FF/F*-*F/+F/+F/F+F*+FF/+F+F/+F/F+F*+FF/F-+*F/F-F/+F+F/F-F/FF*+FF/F-+FF/F+F-+*F-F*-*F-F+F/F*-*F/F+F/+F/FF+F/FF/F*-*F/+F/+F/F+F*+FF/+F+F/+F/F+F*+FF/F-+*F/F-F/+F+F/F-F/FF*+FF/F-+FF/F+F-+*F-F*-*F-F+F/F*-*F/F+F/+F/FF+F/FF/F*-*F/+F/+F/F+F*+FF/+F+F/+F/F+F*+FF/F-+*F/F-F/+F+F/F-F/FF*+FF/F-+FF/F+F-+*F-F*-*F-F+F/F*-*F/F+F/+F/FF+F/FF/F*-*F/+F/+F/F+F*+FF/+F+F/+F/F+F*+FF/F-+*F/F-F/+F+F/F-F/FF*+FF/F-+FF/F+F-+"
-const axiomBard100 = "+F++F++F*F+F-**/F-F-F*F++F-**F+*F*-F+**F--F-F+*++F++F-F-F-FF++F+F*-F-*FF-F**F+F-F+*F-**F-FF-F**F--FF"
-const axiomBard200 = "---F****+/F+F/*///+FF/F++**//++*///+*****FFF-+/--*F-*-F--*--++FF++*F+FF-+/+*+/+F+-++*/FFF/++F/-/-+/*F+/F*/F-/F+*+*+-*+F-F//-**F/F+F++F--*/***+--F+F//+//*/--+FF-//+F--+**F-/++-F*F/--/F+FF--FF-+*-F--/FF"
-const axiomBard300 = "F+/F+-+*/++F-/*+-+F*FF*F++**--F+/F+F+FF/F+F/+**-+-+F+FF++F+**F-F+*-F+F+-*/F+F+-*/F-F/+F+/F+F++*F++F+-FF+F+F*-*/F++/F+F+F+F/-F+F+F*-F+F+-*/F+F+-*/F-F/+F+/F+F++*F++F+-FF+F+F*-*/F++/F+F+F+F/-F+F+F*-F+F+-*/F+F+-*/F-F/+F+/F+F++*F++F+-FF+F+F*-*/F++/F+F+F+F/-F+F+F*-F+F+-*/F+F+-*/F-F/+F+/F+F++*F++F+-FF+F+F*"
-const axiomBard400 = "/+F+/++*-F-/F---/--//+//-F-F-/---//+F++F**/F-/F/F**F+/+++-FF-F++-/-/F+/F+FFF+///F/+-+FF/+*-/FF-F-/FF+///-+F/**+/F-++/F++/-FF-+-/-F/--F/+//+F-+F+/+-///++/F+F**/+F--/--+**//++FFFFF-+-///-F/-F+--+F--/F---/+//FFFFF+//+/F-+F++F+F-+F+F-+/FF+F++/-++/+/F//F++++-F-//FF/F-FFF+/F/FF-F/F-+-+F//+FF/+*-++-+/+F-F-/++F/---+--++-+-F+F-F-F/-/F+/+--+-+-*F+-/-++//FF///-F+++//-+/+-F-----+FF/-F/+F-FF+FF+-++/F+/-FF-/F*/"
-const axiomBard500 = "*F+/-*/++//*-**++*F/F**/-++-+/F/+/++F/-+///FF-//+F/+/-++F+**--F/+**/-F/+/FF*-/-F-FF*--*-/F--//F-F*-+/+*-F-F**/F-*+F-F///---/-F*-+*-//+-F--F--/F/-/*-+*+**/*-F-/++F/*F*FF+-FF++**/*/*-*/++/+/--/F+-+***-*+-/F****-*/F**F*-*F-F-*/+*F*+-*F+-F+F+F*F-+*+**/-**-F-*-///-F/-*/*/FFFF-+FFF//F+-F--FF**+++-*++*/+*//F*+-+/*-+/+-+F+//F//FFF+-FF/+---F/+F*/F+-+/FF+---F**F-///*//+-+++**F*F/F-***//-*-F+**+*FF*+F*FF+-F/---FF/+*F+-F-F-+/+*FF*//+-*F-/FFF-+--/F/FF--F/F*F/-*+**+*++/F/*/+F/*/-*F+*/-F+-FF*/-/*+----F---***F-"
-const randomAxiom = generateRandomAxiom();
-// -----------------------------------------------------------------
-
 // PATTERNS --------------------------------------------------------
-const patternF1 = ""
-const patternF2 = "F+F-F-F+F"
-const patternF3 = "F*F*F*F*F*F/F"
-const patternF4 = "F-F*F-F"
-const patternF5 = "F/F**FF**F/F/F"
-const patternF6 = "F/FF*F**F/F*F*F**F/FF*F"
-const randomPatternF = generateRandomPattern(["F", "F", "F", "F", "+", "-", "*", "/"])
 
-const patternPlus1 = ""
-const randomPatternPlus = generateRandomPattern(["F", "+", "+", "+", "+", "-", "*", "/"])
-
-const patternMinus1 = ""
-const randomPatternMinus = generateRandomPattern(["F", "+", "-", "-", "-", "-", "*", "/"])
-
-const patternTimes1 = ""
-const randomPatternTimes = generateRandomPattern(["F", "+", "-", "*", "*", "*", "*", "/"])
-
-const patternDiv1 = ""
-const randomPatternDiv = generateRandomPattern(["F", "+", "-", "*", "/", "/", "/", "/"])
 // -----------------------------------------------------------------
 
 const texture = new THREE.TextureLoader().load( "./texture2.jpg" );
@@ -158,14 +117,17 @@ let angles = [
     new THREE.Vector3(5, 0, -5)
 ]
 
-let axiomArray = [...axiomGPT100]
-const selectedPatternF = [...patternF2]
-const selectedPatternPlus = [...patternPlus1]
-const selectedPatternMinus = [...patternMinus1]
-const selectedPatternTimes = [...patternTimes1]
-const selectedPatternDiv = [...patternDiv1]
+let axiomArray, selectedPatternF, selectedPatternPlus, selectedPatternMinus, selectedPatternTimes, selectedPatternDiv   
+
+URL_TYPED_AXIOM !== "" ? (axiomArray = [...URL_TYPED_AXIOM]) : (axiomArray = [...axioms[URL_AXIOM]])
+URL_TYPED_F_RULE !== "" ? (selectedPatternF = [...URL_TYPED_F_RULE]) : (selectedPatternF = [...FRules[URL_F_RULE]])
+URL_TYPED_PLUS_RULE !== "" ? (selectedPatternPlus = [...URL_TYPED_PLUS_RULE]) : (selectedPatternPlus = [...plusRules[URL_PLUS_RULE]])
+URL_TYPED_MINUS_RULE !== "" ? (selectedPatternMinus = [...URL_TYPED_MINUS_RULE]) : (selectedPatternMinus = [...minusRules[URL_MINUS_RULE]])
+URL_TYPED_TIMES_RULE !== "" ? (selectedPatternTimes = [...URL_TYPED_TIMES_RULE]) : (selectedPatternTimes = [...timesRules[URL_TIMES_RULE]])
+URL_TYPED_DIV_RULE !== "" ? (selectedPatternDiv = [...URL_TYPED_DIV_RULE]) : (selectedPatternDiv = [...divRules[URL_DIV_RULE]])
 
 console.log("length", axiomArray.length)
+console.log("axiomArray", axiomArray)
 console.log("selectedPatternF", selectedPatternF)
 console.log("selectedPatternPlus", selectedPatternPlus)
 console.log("selectedPatternMinus", selectedPatternMinus)
@@ -209,7 +171,7 @@ const applyRules = (axiomArray) => {
     return axiomArray   
 }
 
-const iter = 2
+const iter = URL_ITER
 for (let i = 0; i <= iter-1; i++) {
     axiomArray = applyRules(axiomArray)
 }
