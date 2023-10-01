@@ -1,6 +1,8 @@
 import * as THREE from "three"
 import { OrbitControls } from 'OrbitControls'; // importation de l'addon Orbit Controls pour la gestion de la caméra
 import { TrackballControls } from 'TrackballControls'; // importation de l'addon Orbit Controls pour la gestion de la caméra
+import { FlyControls } from 'FlyControls';
+import { FirstPersonControls } from 'FirstPersonControls';
 
 const generateRandomPattern = (array) => {
     const length = Math.ceil(Math.random()*15);
@@ -23,9 +25,10 @@ const generateRandomAxiom = () => {
     return randomAxiom
 }
 
+const planeGeometry = new THREE.PlaneGeometry(1, 1)
 const draw = () => {
+    drawSphere("start", points[0])
     for (let i = 1; i <= points.length-1; i++) {
-        const planeGeometry = new THREE.PlaneGeometry(1, 1)
         const plane = new THREE.Mesh(planeGeometry, material)
         const dx = points[i].x - points[i-1].x
         const dz = points[i].z - points[i-1].z
@@ -37,6 +40,17 @@ const draw = () => {
         plane.rotation.x = Math.PI/2
         scene.add(plane)
     }
+    drawSphere("end", points[points.length-1])
+}
+
+const StartMaterial = new THREE.MeshBasicMaterial({color: 0x00ff00})
+const EndMaterial = new THREE.MeshBasicMaterial({color: 0xff0000})
+const SphereGeometry = new THREE.SphereGeometry()
+
+const drawSphere = (moment, pos) => {
+    const sphere = new THREE.Mesh(SphereGeometry, moment == "start" ? StartMaterial : EndMaterial)
+    sphere.position.set(pos.x, pos.y, pos.z)
+    scene.add(sphere)
 }
 
 // AXIOMES ---------------------------------------------------------
@@ -144,8 +158,8 @@ let angles = [
     new THREE.Vector3(5, 0, -5)
 ]
 
-const axiomArray = [...testAxiom]
-const selectedPatternF = [...patternF1]
+let axiomArray = [...axiomGPT100]
+const selectedPatternF = [...patternF2]
 const selectedPatternPlus = [...patternPlus1]
 const selectedPatternMinus = [...patternMinus1]
 const selectedPatternTimes = [...patternTimes1]
@@ -158,36 +172,46 @@ console.log("selectedPatternMinus", selectedPatternMinus)
 console.log("selectedPatternTimes", selectedPatternTimes)
 console.log("selectedPatternDiv", selectedPatternDiv)
 
-let i = 0;
-while (axiomArray[i] != undefined) {
-    if (axiomArray[i] == "F") {
-        selectedPatternF.map((letter) => {
-            axiomArray.splice(i+1, 0, letter)
-        })
-        i += selectedPatternF.length+1
-    }  else if (axiomArray[i] == "+") {
-        selectedPatternPlus.map((letter) => {
-            axiomArray.splice(i+1, 0, letter)
-        })
-        i += selectedPatternPlus.length+1
-    } else if (axiomArray[i] == "-") {
-        selectedPatternMinus.map((letter) => {
-            axiomArray.splice(i+1, 0, letter)
-        })
-        i += selectedPatternMinus.length+1
-    } else if (axiomArray[i] == '*') {
-        selectedPatternTimes.map((letter) => {
-            axiomArray.splice(i+1, 0, letter)
-        })
-        i += selectedPatternTimes.length+1
-    } else if (axiomArray[i] == "/") {
-        selectedPatternDiv.map((letter) => {
-            axiomArray.splice(i+1, 0, letter)
-        })
-        i += selectedPatternDiv.length+1
-    } else {
-        i += 1
+
+
+const applyRules = (axiomArray) => {
+    let i = 0;
+    while (axiomArray[i] != undefined) {
+        if (axiomArray[i] == "F") {
+            selectedPatternF.map((letter) => {
+                axiomArray.splice(i+1, 0, letter)
+            })
+            i += selectedPatternF.length+1
+        }  else if (axiomArray[i] == "+") {
+            selectedPatternPlus.map((letter) => {
+                axiomArray.splice(i+1, 0, letter)
+            })
+            i += selectedPatternPlus.length+1
+        } else if (axiomArray[i] == "-") {
+            selectedPatternMinus.map((letter) => {
+                axiomArray.splice(i+1, 0, letter)
+            })
+            i += selectedPatternMinus.length+1
+        } else if (axiomArray[i] == '*') {
+            selectedPatternTimes.map((letter) => {
+                axiomArray.splice(i+1, 0, letter)
+            })
+            i += selectedPatternTimes.length+1
+        } else if (axiomArray[i] == "/") {
+            selectedPatternDiv.map((letter) => {
+                axiomArray.splice(i+1, 0, letter)
+            })
+            i += selectedPatternDiv.length+1
+        } else {
+            i += 1
+        }
     }
+    return axiomArray   
+}
+
+const iter = 2
+for (let i = 0; i <= iter-1; i++) {
+    axiomArray = applyRules(axiomArray)
 }
 
 console.log(axiomArray)
