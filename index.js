@@ -6,22 +6,37 @@ const axiom = "F*+*-*F/+F+F-FFF+FF/F*-*+F+F*+F+*F*-*+F-F*-*F+F*-*+F*+FF/+F/F-+*F
 // const axiom = "F"
 // const axiom = "F-F+*F/F"
 
-const char = ["F", "F", "F", "F", "F", "+", "-", "*", "/"]
-const length = Math.ceil(Math.random()*15)
-var randomPattern = ""
-
-for (let i = 0; i <= length; i++) {
-    const letter = Math.floor(Math.random()*9)
-    randomPattern += char[letter]
+const generateRandomPattern = (array) => {
+    const length = Math.ceil(Math.random()*15);
+    var randomPattern = ""
+    for (let i = 0; i<= length; i++) {
+        const letter = Math.floor(Math.random()*8)
+        randomPattern += array[letter]
+    }
+    return randomPattern
 }
 
-console.log(randomPattern)
+// PATTERNS --------------------------------------------------------
+const patternF1 = ""
+const patternF2 = "F+F-F-F+F"
+const patternF3 = "F*F*F*F*F*F/F"
+const patternF4 = "F-F*F-F"
+const patternF5 = "F/F**FF**F/F/F"
+const patternF6 = "F/FF*F**F/F*F*F**F/FF*F"
+const randomPatternF = generateRandomPattern(["F", "F", "F", "F", "+", "-", "*", "/"])
 
-const pattern1 = "F+F-F-F+F"
-const pattern2 = "F*F*F*F*F*F/F"
-const pattern3 = "F-F*F-F"
-const pattern4 = "F/F**FF**F/F/F"
-const pattern5 = "F/FF*F**F/F*F*F**F/FF*F"
+const patternPlus1 = ""
+const randomPatternPlus = generateRandomPattern(["F", "+", "+", "+", "+", "-", "*", "/"])
+
+const patternMinus1 = ""
+const randomPatternMinus = generateRandomPattern(["F", "+", "-", "-", "-", "-", "*", "/"])
+
+const patternTimes1 = ""
+const randomPatternTimes = generateRandomPattern(["F", "+", "-", "*", "*", "*", "*", "/"])
+
+const patternDiv1 = ""
+const randomPatternDiv = generateRandomPattern(["F", "+", "-", "*", "/", "/", "/", "/"])
+// -----------------------------------------------------------------
 
 const texture = new THREE.TextureLoader().load( "./texture2.jpg" );
 texture.wrapS = THREE.RepeatWrapping;
@@ -88,20 +103,49 @@ let angles = [
 ]
 
 const axiomArray = [...axiom]
-const selectedPattern = [...randomPattern]
+const selectedPatternF = [...randomPatternF]
+const selectedPatternPlus = [...randomPatternPlus]
+const selectedPatternMinus = [...randomPatternMinus]
+const selectedPatternTimes = [...randomPatternTimes]
+const selectedPatternDiv = [...randomPatternDiv]
+
+console.log("selectedPatternF", selectedPatternF)
+console.log("selectedPatternPlus", selectedPatternPlus)
+console.log("selectedPatternMinus", selectedPatternMinus)
+console.log("selectedPatternTimes", selectedPatternTimes)
+console.log("selectedPatternDiv", selectedPatternDiv)
 
 let i = 0;
 while (axiomArray[i] != undefined) {
     if (axiomArray[i] == "F") {
-        selectedPattern.map((letter) => {
+        selectedPatternF.map((letter) => {
             axiomArray.splice(i+1, 0, letter)
         })
-        i += selectedPattern.length+1
+        i += selectedPatternF.length+1
+    }  else if (axiomArray[i] == "+") {
+        selectedPatternPlus.map((letter) => {
+            axiomArray.splice(i+1, 0, letter)
+        })
+        i += selectedPatternPlus.length+1
+    } else if (axiomArray[i] == "-") {
+        selectedPatternMinus.map((letter) => {
+            axiomArray.splice(i+1, 0, letter)
+        })
+        i += selectedPatternMinus.length+1
+    } else if (axiomArray[i] == '*') {
+        selectedPatternTimes.map((letter) => {
+            axiomArray.splice(i+1, 0, letter)
+        })
+        i += selectedPatternTimes.length+1
+    } else if (axiomArray[i] == "/") {
+        selectedPatternDiv.map((letter) => {
+            axiomArray.splice(i+1, 0, letter)
+        })
+        i += selectedPatternDiv.length+1
     } else {
         i += 1
     }
 }
-
 
 var points = [];
 points.push(new THREE.Vector3(x, 0, z))
