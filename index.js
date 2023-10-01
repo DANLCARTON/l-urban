@@ -3,7 +3,7 @@ import { OrbitControls } from 'OrbitControls'; // importation de l'addon Orbit C
 import { TrackballControls } from 'TrackballControls'; // importation de l'addon Orbit Controls pour la gestion de la caméra
 import { FlyControls } from 'FlyControls';
 import { FirstPersonControls } from 'FirstPersonControls';
-import axioms from "./axioms";
+import axioms from "./axioms.js";
 import {FRules, plusRules, minusRules, timesRules, divRules} from "./rules.js"
 
 const urlParams = new URLSearchParams(window.location.search)
