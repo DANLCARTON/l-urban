@@ -20,36 +20,50 @@ let URL_TYPED_TIMES_RULE = urlParams.get("typed-times-rule")
 let URL_DIV_RULE = urlParams.get("div-rule")
 let URL_TYPED_DIV_RULE = urlParams.get("typed-div-rule")
 let URL_ITER = urlParams.get("iter")
+let URL_ANIM = urlParams.get("anim")
 
 const planeGeometry = new THREE.PlaneGeometry(1, 1)
+let currentPlane = 1; // Étape 1 : Initialiser la variable pour suivre le plan actuel
+
 const draw = () => {
-    drawSphere("start", points[0])
-    for (let i = 1; i <= points.length-1; i++) {
-        const plane = new THREE.Mesh(planeGeometry, material)
-        const dx = points[i].x - points[i-1].x
-        const dz = points[i].z - points[i-1].z
-        const dy = points[i].y - points[i-1].y
-        const distance = Math.sqrt(dx*dx+dz*dz)
-        const angleZ = Math.atan2(dz, dx)
-        const angleY = Math.atan2(dy, dy)
-        plane.scale.set(distance, 1, 1)
-        plane.position.set((points[i].x + points[i-1].x)/2, (points[i].y + points[i-1].y)/2, (points[i].z + points[i-1].z)/2)
-        plane.rotation.z = angleZ
-        plane.rotation.y = angleY
-        plane.rotation.x = Math.PI/2
-        scene.add(plane)
+    if (currentPlane >= points.length) {
+        return; // Si tous les plans ont été dessinés, sortir de la fonction
     }
-    drawSphere("end", points[points.length-1])
+
+    const plane = new THREE.Mesh(planeGeometry, material)
+    const dx = points[currentPlane].x - points[currentPlane - 1].x
+    const dz = points[currentPlane].z - points[currentPlane - 1].z
+    const dy = points[currentPlane].y - points[currentPlane - 1].y
+    const distance = Math.sqrt(dx * dx + dz * dz)
+    const angleZ = Math.atan2(dz, dx)
+    const angleY = Math.atan2(dy, dy)
+    plane.scale.set(distance, 1, 1)
+    plane.position.set((points[currentPlane].x + points[currentPlane - 1].x) / 2, (points[currentPlane].y + points[currentPlane - 1].y) / 2, (points[currentPlane].z + points[currentPlane - 1].z) / 2)
+    plane.rotation.z = angleZ
+    plane.rotation.y = angleY
+    plane.rotation.x = Math.PI / 2
+    scene.add(plane)
+
+    currentPlane++; // Passer au plan suivant
+    requestAnimationFrame(draw); // Demander un nouveau rendu
 }
 
-const StartMaterial = new THREE.MeshBasicMaterial({color: 0x00ff00})
-const EndMaterial = new THREE.MeshBasicMaterial({color: 0xff0000})
-const SphereGeometry = new THREE.SphereGeometry()
-
-const drawSphere = (moment, pos) => {
-    const sphere = new THREE.Mesh(SphereGeometry, moment == "start" ? StartMaterial : EndMaterial)
-    sphere.position.set(pos.x, pos.y, pos.z)
-    scene.add(sphere)
+const drawAllPlanes = () => {
+    for (let i = 1; i < points.length; i++) {
+        const plane = new THREE.Mesh(planeGeometry, material);
+        const dx = points[i].x - points[i - 1].x;
+        const dz = points[i].z - points[i - 1].z;
+        const dy = points[i].y - points[i - 1].y;
+        const distance = Math.sqrt(dx * dx + dz * dz);
+        const angleZ = Math.atan2(dz, dx);
+        const angleY = Math.atan2(dy, dy);
+        plane.scale.set(distance, 1, 1);
+        plane.position.set((points[i].x + points[i - 1].x) / 2, (points[i].y + points[i - 1].y) / 2, (points[i].z + points[i - 1].z) / 2);
+        plane.rotation.z = angleZ;
+        plane.rotation.y = angleY;
+        plane.rotation.x = Math.PI / 2;
+        scene.add(plane);
+    }
 }
 
 const texture = new THREE.TextureLoader().load( "./texture2.jpg" );
@@ -66,7 +80,7 @@ Number.prototype.mod = function (n) {
 // définition de la scene et de la caméra
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 90, window.innerWidth / window.innerHeight, 0.1, 1100000 );
-camera.position.y = 20
+camera.position.y = 50
 const renderer = new THREE.WebGLRenderer();
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap
@@ -168,21 +182,26 @@ const applyRules = (axiomArray) => {
     return axiomArray   
 }
 
-const iter = URL_ITER
-for (let i = 0; i <= iter-1; i++) {
-    axiomArray = applyRules(axiomArray)
+// boucle de rendu
+function animate() {
+    requestAnimationFrame(animate);
+    controls.update();
+    renderer.render(scene, camera);
 }
 
-console.log(axiomArray)
-
-
+// Appeler la fonction draw après les itérations
+const iter = URL_ITER;
+for (let i = 0; i <= iter - 1; i++) {
+    axiomArray = applyRules(axiomArray);
+}
+console.log(axiomArray);
 
 var points = [];
-points.push(new THREE.Vector3(x, 0, z))
-var savedPos = new THREE.Vector3(0, 0, 0)
-var savedDir = dir
+points.push(new THREE.Vector3(x, 0, z));
+var savedPos = new THREE.Vector3(0, 0, 0);
+var savedDir = dir;
 var p = 0;
-var y = 0
+var y = 0;
 
 axiomArray.map((letter) => {
     var currentAngle = angles[dir]
@@ -210,7 +229,7 @@ axiomArray.map((letter) => {
         savedDir = dir
     } else if (letter == "]") {
         console.log("]", "saved pos", savedPos, "points", points)
-        draw()
+        drawAllPlanes()
         x = savedPos.x
         z = savedPos.z
         dir = savedDir
@@ -220,17 +239,6 @@ axiomArray.map((letter) => {
     }
 })
 console.log(points)
-draw()
-
-
-
-
-
-// boucle de rendu
-function animate() {
-    requestAnimationFrame( animate );
-    controls.update()
-    renderer.render( scene, camera );
-}
+URL_ANIM == "on" ? draw() : drawAllPlanes()
 
 animate();
