@@ -20,23 +20,27 @@ let URL_TYPED_TIMES_RULE = urlParams.get("typed-times-rule")
 let URL_DIV_RULE = urlParams.get("div-rule")
 let URL_TYPED_DIV_RULE = urlParams.get("typed-div-rule")
 let URL_ITER = urlParams.get("iter")
+let URL_Y = urlParams.get("y-param")
 
 const planeGeometry = new THREE.PlaneGeometry(1, 1)
-const draw = () => {
-    drawSphere("start", points[0])
-    for (let i = 1; i <= points.length-1; i++) {
-        const plane = new THREE.Mesh(planeGeometry, material)
-        const dx = points[i].x - points[i-1].x
-        const dz = points[i].z - points[i-1].z
-        const distance = Math.sqrt(dx*dx+dz*dz)
-        const angle = Math.atan2(dz, dx)
-        plane.scale.set(distance, 1, 1)
-        plane.position.set((points[i].x + points[i-1].x)/2, 0, (points[i].z + points[i-1].z)/2)
-        plane.rotation.z = angle
-        plane.rotation.x = Math.PI/2
-        scene.add(plane)
-    }
-    drawSphere("end", points[points.length-1])
+    const draw = () => {
+        drawSphere("start", points[0])
+        for (let i = 1; i <= points.length-1; i++) {
+            const plane = new THREE.Mesh(planeGeometry, material)
+            const dx = points[i].x - points[i-1].x
+            const dz = points[i].z - points[i-1].z
+            const dy = points[i].y - points[i-1].y
+            const distance = Math.sqrt(dx*dx+dz*dz)
+            const angleZ = Math.atan2(dz, dx)
+            const angleY = Math.atan2(dy, distance)
+            plane.scale.set(distance, 1, 1)
+            plane.position.set((points[i].x + points[i-1].x)/2, (points[i].y + points[i-1].y)/2, (points[i].z + points[i-1].z)/2)
+            plane.rotation.z = angleZ
+            plane.rotation.y = angleY
+            plane.rotation.x = Math.PI/2
+            scene.add(plane)
+        }
+        drawSphere("end", points[points.length-1])
 }
 
 const StartMaterial = new THREE.MeshBasicMaterial({color: 0x00ff00})
@@ -48,10 +52,6 @@ const drawSphere = (moment, pos) => {
     sphere.position.set(pos.x, pos.y, pos.z)
     scene.add(sphere)
 }
-
-// PATTERNS --------------------------------------------------------
-
-// -----------------------------------------------------------------
 
 const texture = new THREE.TextureLoader().load( "./texture2.jpg" );
 texture.wrapS = THREE.RepeatWrapping;
@@ -185,6 +185,7 @@ points.push(new THREE.Vector3(x, 0, z))
 var savedPos = new THREE.Vector3(0, 0, 0)
 var savedDir = dir
 var p = 0;
+var y = 0
 
 axiomArray.map((letter) => {
     var currentAngle = angles[dir]
@@ -193,7 +194,7 @@ axiomArray.map((letter) => {
         x += currentAngle.x;
         z += currentAngle.z;
         p += 1
-        points.push(new THREE.Vector3(x, 0, z));
+        points.push(new THREE.Vector3(x, y, z));
     } else if (letter == "+") {
         dir = (dir+1).mod(8)
         currentAngle = angles[dir];
@@ -218,8 +219,9 @@ axiomArray.map((letter) => {
         dir = savedDir
         points = []
         p = 0
-        points.push(new THREE.Vector3(x, 0, z))
+        points.push(new THREE.Vector3(x, y, z))
     }
+    if (URL_Y == "on") y += Math.random()-.5
 })
 console.log(points)
 draw()
